@@ -128,3 +128,4 @@ dist
 
 .vscode
 yarn.lock
+*.env

@@ -1,8 +1,9 @@
 const jwt = require("jsonwebtoken");
 
+// create a token from a payload
 function createJWTToken(payload) {
   return jwt.sign(payload, process.env.JWT_SECRET || "secret", {
-    expiresIn: "30m",
+    expiresIn: Number(process.env.CAPTCHA_TIMEOUT) || "30m",
     header: {
       alg: "HS256",
       typ: "JWT",
@@ -13,6 +14,7 @@ function createJWTToken(payload) {
   });
 }
 
+// verify a token
 function verifyJWTToken(token) {
   try {
     return jwt.verify(token, process.env.JWT_SECRET || "secret", {

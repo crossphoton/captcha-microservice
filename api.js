@@ -1,52 +1,68 @@
 const express = require("express");
 const app = express();
-const { image_text, verify } = require("./src");
-const logger = require("./src/logging");
+const compression = require("compression");
+const { image_text, math_text, verify } = require("./src");
+const { logger, middleware: logMiddleWare } = require("./src/logging");
 const { verifyJWTToken } = require("./src/jwt");
 
 app.disable("x-powered-by");
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.enable("trust proxy");
+app.use(logMiddleWare);
+app.use(
+  compression({
+    filter: shouldCompress,
+    level: 9,
+  })
+);
 
-app.get("/captcha/imageCaptcha.png", async (_req, res) => {
-  var captcha;
-  try {
-    captcha = await image_text.generate();
-  } catch (error) {
-    return res.sendStatus(500);
-  }
+function shouldCompress(req, res) {
+  if (req.headers["x-no-compression"]) return false;
+  return compression.filter(req, res);
+}
 
-  res.setHeader("Content-Type", "image/png");
-  res.setHeader("X-Captcha-Session-Id", captcha.sessionId);
-
-  res.send(captcha.captcha);
-});
-
-app.get("/verify", async (req, res) => {
+app.get("/verify", (req, res) => {
   const { sessionId, solution } = req.query;
+  if (!sessionId || !solution) {
+    return res.sendStatus(400);
+  }
   try {
-    const valid = await verify(sessionId, solution);
-    valid ? res.send(valid) : res.sendStatus(401);
+    verify(sessionId, solution).then((valid) => {
+      valid ? res.send(valid) : res.sendStatus(401);
+    });
   } catch (err) {
-    logger.error(err);
+    logger.error(err.message);
     res.send(null).statusCode(401);
   }
 });
 
-app.get("/validate", async (req, res) => {
+app.get("/validate", (req, res) => {
   const { sessionId, token } = req.query;
   if (!token || !sessionId) {
     return res.sendStatus(400);
   }
   try {
-    const valid = await verifyJWTToken(token);
-    valid && valid.sessionId === sessionId
-      ? res.sendStatus(200)
-      : res.sendStatus(401);
+    verifyJWTToken(token).then((valid) => {
+      valid && valid.sessionId === sessionId
+        ? res.sendStatus(200)
+        : res.sendStatus(401);
+    });
   } catch (err) {
     logger.error(err.message);
     res.sendStatus(500);
   }
 });
+
+app.get("/captcha/imageCaptcha", image_text.middleware);
+
+app.get("/captcha/mathCaptcha", math_text.middleware);
+
+// Pick a random captcha method
+const randomCaptcha = (req, res, next) => {
+  const map = [image_text, math_text];
+  return map[Math.floor(Math.random() * map.length)].middleware(req, res, next);
+};
+
+app.get("/captcha/captcha", randomCaptcha);
 
 module.exports = app;

@@ -7,6 +7,22 @@ var prom_middleware = prometheusMiddleware({
   defaultLabels: {
     version: "1.0.0",
   },
+  authenticate: function (req) {
+    const authHeader = req.header("Authorization");
+    if (!authHeader) {
+      return false;
+    }
+    const authHeaderParts = authHeader.split(" ");
+    if (authHeaderParts.length !== 2) {
+      return false;
+    }
+    const scheme = authHeaderParts[0];
+    const credentials = authHeaderParts[1];
+    if (scheme !== "Bearer") {
+      return false;
+    }
+    return credentials === process.env.PROMETHEUS_SECRET || "secret";
+  },
 });
 
 function addPrometheus(app) {

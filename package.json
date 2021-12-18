@@ -26,11 +26,17 @@
   "homepage": "https://github.com/crossphoton/captcha-microservice#readme",
   "dependencies": {
     "captchagen": "^1.2.0",
+    "compression": "^1.7.4",
     "express": "^4.17.2",
     "express-prometheus-middleware": "^1.2.0",
+    "express-winston": "^4.2.0",
+    "helmet": "^4.6.0",
     "ioredis": "^4.28.2",
     "jsonwebtoken": "^8.5.1",
+    "lightship": "^6.8.0",
     "prom-client": "^14.0.1",
+    "rate-limiter-flexible": "^2.3.6",
+    "text-to-image": "^4.1.1",
     "uuid": "^8.3.2",
     "winston": "^3.3.3"
   },

@@ -23,4 +23,4 @@ async function verify(/** @type {string} */ sessionId, solution) {
   return storedSolution === solution ? createJWTToken({ sessionId }) : null;
 }
 
-module.exports = { store, verify };
+module.exports = { store, verify, redisClient: redis };
