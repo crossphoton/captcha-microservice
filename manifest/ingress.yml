@@ -11,5 +11,21 @@ spec:
       - path: /captcha
         pathType: Prefix
         backend:
-          serviceName: captcha-service
-          servicePort: 80
+          service:
+            name: captcha-service
+            port:
+              number: 80
+      - path: /verify
+        pathType: Prefix
+        backend:
+          service:
+            name: captcha-service
+            port:
+              number: 80
+      - path: /validate
+        pathType: Prefix
+        backend:
+          service:
+            name: captcha-service
+            port:
+              number: 80
