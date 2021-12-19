@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: captcha-service
+spec:
+  selector:
+    matchLabels:
+      app: captcha-service
+  template:
+    metadata:
+      labels:
+        app: captcha-service
+    spec:
+      containers:
+      - name: captcha-service
+        image: crossphoton/captcha-microservice:v1.0.0
+        resources:
+          limits:
+            memory: "500Mi"
+            cpu: "200m"
+        
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 9000
+          failureThreshold: 1
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /live
+            port: 9000
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          # Allow sufficient amount of time (90 seconds = periodSeconds * failureThreshold)
+          # for the registered shutdown handlers to run to completion.
+          periodSeconds: 30
+          successThreshold: 1
+          # Setting a very low timeout value (e.g. 1 second) can cause false-positive
+          # checks and service interruption.
+          timeoutSeconds: 5
+
+        env:
+          - name:  PORT
+            value: "80"
+          - name: ENVIRONMENT
+            value: "production"
+        
+        envFrom:
+          - secretRef:
+              name: redis-secret
+          - secretRef:
+              name: captcha-service-secret
+        
+        ports:
+        - containerPort:  80
+          name:  http
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name:  captcha-service
+spec:
+  type:  ClusterIP
+  selector:
+    app:  captcha-service
+  ports:
+  - name:  http
+    port:  80
+    targetPort:  80

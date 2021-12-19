@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: captcha-service-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: captcha.crossphoton.tech
+    http:
+      paths:
+      - path: /captcha
+        pathType: Prefix
+        backend:
+          serviceName: captcha-service
+          servicePort: 80

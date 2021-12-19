@@ -83,10 +83,16 @@ CAPTCHA_TIMEOUT=        Captcha timeout in seconds
 ```
 
 ## Docker
-`docker run -d --name email-microservice --env-file app.env -p 5555:5555 crossphoton/email-microservice:v1.0.0`
+`docker run -d --name captcha-microservice --env-file app.env -p 5555:5555 crossphoton/captcha-microservice:v1.0.0`
 
 ## Kubernetes
-> TODO
+There are 4 components to deploy:
+- [Redis](./manifest/redis.yml) - For session id to solution  mapping
+- [Secrets](./manifest/secrets.yml) - For configuration
+- [Captcha Microservice](./manifest/captcha-microservice.yml) - The main service
+- [Ingress](./manifest/ingress.yml) - For exposing the service
+  
+> For ingress make sure that ingress is configured. (Use [nginx ingress](https://kubernetes.github.io/ingress-nginx/) for digital ocean)
 
 ## Locally
 1. Clone repository
