@@ -1,0 +1,9 @@
+FROM node:lts-stretch-slim
+
+WORKDIR /app
+EXPOSE $PORT
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl --fail http://localhost:${PORT}/healthz || exit 1
+
+CMD ["yarn", "dev"]
+
